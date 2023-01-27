@@ -1,0 +1,19 @@
+{
+  "name": "gif-maker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:selfrefactor/gif-maker.git",
+  "author": "Deyan Totev <deyan.totev.extern@seven.one>",
+  "license": "MIT",
+  "scripts": {
+    "on": "WITH_CONTAIN_FLAG=ON DELAYS=20 node gif-maker.js",
+    "onx": "WITH_COVER_FLAG=ON DELAYS=20 node gif-maker.js",
+    "onxx": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAYS=20 node gif-maker.js"
+  },
+  "dependencies": {
+    "helpers-fn": "^1.6.0",
+    "jimp": "^0.16.2",
+    "fs-extra":"11.1.0",
+    "rambdax": "^9.0.0"
+  }
+}
