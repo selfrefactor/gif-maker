@@ -1,6 +1,6 @@
 const Jimp = require('jimp')
 const JPEG = require('jpeg-js')
-const { mapParallelAsyncWithLimit, splitEvery, mapAsync } = require('rambdax')
+const { mapParallelAsyncWithLimit, splitEvery, mapAsync, dropLast, takeLast } = require('rambdax')
 const { scanFolder, execSafe } = require('helpers-fn')
 Jimp.decoders[ 'image/jpeg' ] = data =>
   JPEG.decode(data, { maxMemoryUsageInMB : 2024 })
@@ -40,11 +40,12 @@ async function prepareImages(){
   ))
   console.log(images.length, 'images')
   const batches = splitEvery(BATCH_SIZE, images)
-
-  await mapAsync(applyChanges, batches)
+  const modifiedBatches = [...dropLast(2, batches), [...takeLast(2, batches)]]  
+  await mapAsync(applyChanges, modifiedBatches)
 }
 
 async function applyChanges(images, i){
+  console.log('batch size', images.length, i)
   const applyResize = async coverFlag => {
     const folder = coverFlag ?
       'resized/downloads-resized-cover' :
@@ -109,6 +110,7 @@ async function applyChanges(images, i){
     await applyGif(true)
   }
   console.log('end gif'.toUpperCase())
+  console.log('batch size', images.length, i, 'END')
 }
 
 void (async function run(){
