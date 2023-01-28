@@ -6,9 +6,9 @@
   "author": "Deyan Totev <deyan.totev.extern@seven.one>",
   "license": "MIT",
   "scripts": {
-    "on": "WITH_CONTAIN_FLAG=ON DELAYS=20 node gif-maker.js",
-    "onx": "WITH_COVER_FLAG=ON DELAYS=20 node gif-maker.js",
-    "onxx": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAYS=20 node gif-maker.js"
+    "on": "WITH_CONTAIN_FLAG=ON DELAY=20 node gif-maker.js",
+    "onx": "WITH_COVER_FLAG=ON DELAY=20 node gif-maker.js",
+    "onxx": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAY=20 node gif-maker.js"
   },
   "dependencies": {
     "helpers-fn": "^1.6.0",
