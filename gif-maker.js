@@ -41,7 +41,7 @@ async function prepareImages(){
       file.endsWith('.png') ||
       file.endsWith('.jpeg'),
   })
-  if(images.length === 0){
+  if (images.length === 0){
     throw new Error('No images found')
   }
   images.sort((a, b) => a.localeCompare(
@@ -64,52 +64,54 @@ async function prepareImages(){
 }
 
 async function applyChanges(images, i){
-  console.log(
-    'batch size', images.length, i
-  )
+  const log = () => {
+    console.log(
+      'batch size', images.length, i
+    )
+  }
   const applyResize = async coverFlag => {
     const folder = coverFlag ?
       'resized/downloads-resized-cover' :
       'resized/downloads-resized-contain'
-    await mapParallelAsyncWithLimit(
-      async (imagePath, i) => {
-        try {
-          const outputPath = imagePath.replace('/assets/',
-            `/${ folder }-${ i }/`)
-          console.log({
-            imagePath,
-            coverFlag,
-            i,
-            outputPath,
-          }, 'start')
-          if (existsSync(outputPath)){
-            console.log(imagePath, 'exists')
 
-            return
-          }
-          const image = await Jimp.read(imagePath)
-          console.log(imagePath, 'read')
+    await mapAsync(async imagePath => {
+      try {
+        const outputPath = imagePath.replace('/assets/', `/${ folder }-${ i }/`)
+        console.log({
+          imagePath,
+          coverFlag,
+          i,
+          outputPath,
+        },
+        'start')
+        if (existsSync(outputPath)){
+          console.log(imagePath, 'exists')
 
-          const method = coverFlag ? 'cover' : 'contain'
-          await image[ method ](2000, 1250) // resize
-            .quality(100) // set JPEG quality
-            .writeAsync(outputPath)
-          console.log(imagePath, 'done')
-        } catch (e){
-          console.log(e, 'error')
-          console.log(imagePath, 'error')
+          return
         }
-      },
-      1,
-      images
-    )
-  }
+        const image = await Jimp.read(imagePath)
+        console.log(imagePath, 'read')
 
+        const method = coverFlag ? 'cover' : 'contain'
+        await image[ method ](2000, 1250) // resize
+          .quality(100) // set JPEG quality
+          .writeAsync(outputPath)
+        console.log(imagePath, 'done')
+      } catch (e){
+        console.log(e, 'error')
+        console.log(imagePath, 'error')
+      }
+    }, images)
+  }
+  log()
   console.log('start resize'.toUpperCase())
+  
   if (WITH_CONTAIN_FLAG){
+    log()
     await applyResize(false)
   }
   if (WITH_COVER_FLAG){
+    log()
     await applyResize(true)
   }
   console.log('end resize'.toUpperCase())
@@ -129,13 +131,15 @@ async function applyChanges(images, i){
       cwd     : __dirname,
     })
   }
-
+  log()
   console.log('start gif contain'.toUpperCase())
   if (WITH_CONTAIN_FLAG){
+    log()
     await applyGif(false)
   }
   if (WITH_COVER_FLAG){
     console.log('start gif cover'.toUpperCase())
+    log()
     await applyGif(true)
   }
   console.log('end gif'.toUpperCase())
@@ -145,6 +149,6 @@ async function applyChanges(images, i){
 }
 
 void (async function run(){
-  const images =   await prepareImages()
+  const images = await prepareImages()
   await mapAsync(applyChanges, images)
 })()
