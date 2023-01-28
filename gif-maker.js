@@ -52,18 +52,23 @@ async function applyChanges(images, i){
       'resized/downloads-resized-contain'
     await mapParallelAsyncWithLimit(
       async (imagePath, i) => {
-        console.log(
-          imagePath, coverFlag, i, 'start'
-        )
-        const outputPath = imagePath.replace('/assets/', `/${ folder }-${ i }/`)
-        const image = await Jimp.read(imagePath)
-        console.log(imagePath, 'read')
-
-        const method = coverFlag ? 'cover' : 'contain'
-        await image[ method ](2000, 1250) // resize
-          .quality(100) // set JPEG quality
-          .writeAsync(outputPath)
-        console.log(imagePath, 'done')
+        try{
+          console.log(
+            imagePath, coverFlag, i, 'start'
+          )
+          const outputPath = imagePath.replace('/assets/', `/${ folder }-${ i }/`)
+          const image = await Jimp.read(imagePath)
+          console.log(imagePath, 'read')
+  
+          const method = coverFlag ? 'cover' : 'contain'
+          await image[ method ](2000, 1250) // resize
+            .quality(100) // set JPEG quality
+            .writeAsync(outputPath)
+          console.log(imagePath, 'done')
+        }catch(e){
+          console.log(e, 'error')
+          console.log(imagePath, 'error')
+        }
       },
       1,
       images
