@@ -41,6 +41,9 @@ async function prepareImages(){
       file.endsWith('.png') ||
       file.endsWith('.jpeg'),
   })
+  if(images.length === 0){
+    throw new Error('No images found')
+  }
   images.sort((a, b) => a.localeCompare(
     b, undefined, { numeric : true }
   ))
@@ -56,7 +59,8 @@ async function prepareImages(){
     )
   })
   console.log(batches.length, 'modifiedBatches')
-  await mapAsync(applyChanges, modifiedBatches)
+
+  return modifiedBatches
 }
 
 async function applyChanges(images, i){
@@ -141,5 +145,6 @@ async function applyChanges(images, i){
 }
 
 void (async function run(){
-  await prepareImages()
+  const images =   await prepareImages()
+  await mapAsync(applyChanges, images)
 })()
