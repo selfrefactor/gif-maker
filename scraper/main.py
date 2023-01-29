@@ -22,6 +22,8 @@ subreddit = sys.argv[1]
     if(!subreddit):
         raise Exception("No subreddit provided")
 
+print(subreddit, "subreddit")
+
 class SubredditDownloader:
     def __init__(self):
         self.log = get_logger(__name__, logging.DEBUG)
