@@ -4,8 +4,11 @@
 
 ```
 Art
+DigitalPainting
 IDAP
 painting
 oilpainting
 Illustration
+Heavymind
+trippy
 ```

@@ -9,7 +9,7 @@ const {
   flatten,
 } = require('rambdax')
 const { existsSync } = require('fs')
-const { scanFolder, execSafe } = require('helpers-fn')
+const { scanFolder, execSafe, exec } = require('helpers-fn')
 Jimp.decoders[ 'image/jpeg' ] = data =>
   JPEG.decode(data, { maxMemoryUsageInMB : 2024 })
 
@@ -52,11 +52,11 @@ async function downloadImages(){
     console.log('already downloaded')
   }
   const command = `python main.py ${ subreddit }`
-  await execSafe({
+  await exec({
     command,
+    onLog : console.log,
     cwd : `${__dirname}/scraper`,
   })
-  await delay(2000*222)
 }
 
 async function prepareImages(){

@@ -19,8 +19,8 @@ from tqdm.asyncio import tqdm as async_tqdm
 from utils import retry_connection, get_logger
 
 subreddit = sys.argv[1]
-    if(!subreddit):
-        raise Exception("No subreddit provided")
+if subreddit == None:
+    raise Exception("No subreddit provided")
 
 print(subreddit, "subreddit")
 
@@ -100,8 +100,6 @@ class SubredditDownloader:
         after = date_config['AFTER'] or ''
 
         if ask_len:
-            if(!subreddit):
-                raise Exception("No subreddit provided")
             if after and before:
                 print(f"Scraping images from r/{subreddit} before {before} and after {after}")
             elif before:
