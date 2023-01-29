@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import json
+import sys
 import logging
 import pathlib
 import re
@@ -17,6 +18,9 @@ from tqdm.asyncio import tqdm as async_tqdm
 
 from utils import retry_connection, get_logger
 
+subreddit = sys.argv[1]
+    if(!subreddit):
+        raise Exception("No subreddit provided")
 
 class SubredditDownloader:
     def __init__(self):
@@ -85,7 +89,6 @@ class SubredditDownloader:
         return self.api.metadata_['es']['hits']['total']['value']
 
     async def get_submissions(self, ask_len=False):
-        subreddit = self.bot_config['SUBREDDIT']
         # If we only want to know the total amount of submissions,
         # we can set a limit of 1 to be kind to PushShift api.
         limit = 1 if ask_len else None
@@ -95,7 +98,8 @@ class SubredditDownloader:
         after = date_config['AFTER'] or ''
 
         if ask_len:
-            subreddit = self.bot_config['SUBREDDIT']
+            if(!subreddit):
+                raise Exception("No subreddit provided")
             if after and before:
                 print(f"Scraping images from r/{subreddit} before {before} and after {after}")
             elif before:
@@ -250,7 +254,7 @@ class SubredditDownloader:
         else:
             sub_folder = 'images'
 
-        dir_path = pathlib.Path(self.bot_config['DOWNLOAD_FOLDER']) / self.bot_config['SUBREDDIT'] / sub_folder
+        dir_path = pathlib.Path(self.bot_config['DOWNLOAD_FOLDER']) / subreddit / sub_folder
         try:
             dir_path.mkdir(parents=True, exist_ok=True)
             return dir_path

@@ -1,7 +1,6 @@
 const Jimp = require('jimp')
 const JPEG = require('jpeg-js')
 const {
-  mapParallelAsyncWithLimit,
   splitEvery,
   mapAsync,
   dropLast,
@@ -32,6 +31,33 @@ console.log({
   DELAY,
   GIF_CREATE_ONLY,
 })
+
+async function getImages(){
+  if(!existsSync(`${__dirname}/assets/${ subreddit }/images`)){
+    return []
+  }
+  const images = await scanFolder({
+    folder   : `./assets/${ subreddit }/images`,
+    filterFn : file =>
+      file.endsWith('.jpg') ||
+      file.endsWith('.png') ||
+      file.endsWith('.jpeg'),
+  })
+
+  return images
+}
+
+async function downloadImages(){
+  if((await getImages()).length > 0){
+    console.log('already downloaded')
+  }
+  const command = `python main.py ${ subreddit }`
+  await execSafe({
+    command,
+    cwd : `${__dirname}/scraper`,
+  })
+  await delay(2000*222)
+}
 
 async function prepareImages(){
   const images = await scanFolder({
@@ -149,6 +175,7 @@ async function applyChanges(images, i){
 }
 
 void (async function run(){
+  await downloadImages()
   const images = await prepareImages()
   await mapAsync(applyChanges, images)
 })()
