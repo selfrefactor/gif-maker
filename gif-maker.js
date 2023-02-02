@@ -149,6 +149,11 @@ async function applyChanges(images, i){
 
     const coverPart = coverFlag ? '-cover' : ''
     const gifName = `${ subreddit }-${ i }-${ DELAY }${ coverPart }.gif`
+    if(existsSync(`${__dirname}/gifs/${ gifName }`)){
+      console.log(gifName, 'exists')
+      await delay(10000)
+      return
+    }
     const gifArguments = `-src="${ folder }/${ subreddit }/images/*.jpg" -delay=${ DELAY } -dest="gifs/${ gifName }" -verbose`
     const gifCommand = `goanigiffy ${ gifArguments }`
     console.log(gifCommand, 'gifCommand')
