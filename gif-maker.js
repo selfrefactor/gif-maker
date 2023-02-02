@@ -50,6 +50,7 @@ async function getImages(){
 async function downloadImages(){
   if((await getImages()).length > 0){
     console.log('already downloaded')
+    return
   }
   const command = `python main.py ${ subreddit }`
   await exec({
