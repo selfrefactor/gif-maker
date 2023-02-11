@@ -104,13 +104,13 @@ async function applyChanges(images, i){
     await mapAsync(async imagePath => {
       try {
         const outputPath = imagePath.replace('/assets/', `/${ folder }-${ i }/`)
-        console.log({
-          imagePath,
-          coverFlag,
-          i,
-          outputPath,
-        },
-        'start')
+        // console.log({
+        //   imagePath,
+        //   coverFlag,
+        //   i,
+        //   outputPath,
+        // },
+        // 'start')
         if (existsSync(outputPath)){
           console.log(imagePath, 'exists')
 
@@ -120,8 +120,8 @@ async function applyChanges(images, i){
         console.log(imagePath, 'read')
 
         const method = coverFlag ? 'cover' : 'contain'
-        await image[ method ](2000, 1250) // resize
-          .quality(100) // set JPEG quality
+        await image[ method ](2000, 1250)
+          .quality(100) 
           .writeAsync(outputPath)
         console.log(imagePath, 'done')
       } catch (e){
