@@ -7,15 +7,15 @@
   "license": "MIT",
   "scripts": {
     "scrape": "cd scraper && python main.py",
-    "30:xx": "WITH_COVER_FLAG=ON DELAY=30 node gif-maker.js",
-    "30:x": "WITH_CONTAIN_FLAG=ON DELAY=30 node gif-maker.js",
-    "30": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAY=30 node gif-maker.js",
+    "on:xx": "WITH_COVER_FLAG=ON DELAY=30 node gif-maker.js",
+    "on:x": "WITH_CONTAIN_FLAG=ON DELAY=30 node gif-maker.js",
+    "on": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAY=30 node gif-maker.js",
     "20:xx": "WITH_COVER_FLAG=ON DELAY=20 node gif-maker.js",
     "20:x": "WITH_CONTAIN_FLAG=ON DELAY=20 node gif-maker.js",
     "20": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAY=20 node gif-maker.js",
-    "on:xx": "WITH_COVER_FLAG=ON DELAY=10 node gif-maker.js",
-    "on:x": "WITH_CONTAIN_FLAG=ON DELAY=10 node gif-maker.js",
-    "on": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAY=10 node gif-maker.js"
+    "10:xx": "WITH_COVER_FLAG=ON DELAY=10 node gif-maker.js",
+    "10:x": "WITH_CONTAIN_FLAG=ON DELAY=10 node gif-maker.js",
+    "10": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAY=10 node gif-maker.js"
   },
   "dependencies": {
     "helpers-fn": "^1.6.0",
