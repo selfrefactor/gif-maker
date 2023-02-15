@@ -133,6 +133,7 @@ async function applyChanges(images, i){
     }
     const gifArguments = `-src="${ folder }/${ subreddit }/images/*.jpg" -delay=${ DELAY } -dest="gifs/${ gifName }" -verbose`
     const gifCommand = `goanigiffy ${ gifArguments }`
+    console.log(gifCommand, `gifCommand`)
     await execSafe({
       command : gifCommand,
       cwd     : __dirname,
