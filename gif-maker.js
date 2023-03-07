@@ -26,7 +26,7 @@ const WITH_CONTAIN_FLAG = process.env.WITH_CONTAIN_FLAG === 'ON'
 const DELAY = process.env.DELAY ? Number(process.env.DELAY) : DEFAULT_DELAY
 
 async function getImages(){
-  if(!existsSync(`${__dirname}/assets/${ subreddit }/images`)){
+  if (!existsSync(`${ __dirname }/assets/${ subreddit }/images`)){
     return []
   }
   const images = await scanFolder({
@@ -41,15 +41,16 @@ async function getImages(){
 }
 
 async function downloadImages(){
-  if((await getImages()).length > 0){
+  if ((await getImages()).length > 0){
     console.log('already downloaded')
+
     return
   }
   const command = `python main.py ${ subreddit }`
   await exec({
     command,
     onLog : console.log,
-    cwd : `${__dirname}/scraper`,
+    cwd   : `${ __dirname }/scraper`,
   })
 }
 
@@ -83,15 +84,14 @@ async function prepareImages(){
 }
 
 async function applyChanges(images, i){
-
   const applyResize = async coverFlag => {
     const folder = coverFlag ?
       'resized/downloads-resized-cover' :
       'resized/downloads-resized-contain'
 
-    await mapAsync(async imagePath => {
+    await mapAsync(async (imagePath, index) => {
       try {
-        const outputPath = imagePath.replace('/assets/', `/${ folder }-${ i }/`)
+        const outputPath = `${ __dirname }/${ folder }-${ i }/${ subreddit }/${ index }.jpg`
         if (existsSync(outputPath)){
           return
         }
@@ -99,8 +99,7 @@ async function applyChanges(images, i){
         console.log(imagePath, 'read')
 
         const method = coverFlag ? 'cover' : 'contain'
-        await image[ method ](2000, 1250)
-          .quality(100) 
+        await image[ method ](2000, 1250).quality(100)
           .writeAsync(outputPath)
         console.log(imagePath, 'done')
       } catch (e){
@@ -110,7 +109,7 @@ async function applyChanges(images, i){
     }, images)
   }
   console.log('start resize'.toUpperCase())
-  
+
   if (WITH_CONTAIN_FLAG){
     await applyResize(false)
   }
@@ -126,14 +125,15 @@ async function applyChanges(images, i){
 
     const coverPart = coverFlag ? '-cover' : ''
     const gifName = `${ subreddit }-${ i }-${ DELAY }${ coverPart }.gif`
-    if(existsSync(`${__dirname}/gifs/${ gifName }`)){
+    if (existsSync(`${ __dirname }/gifs/${ gifName }`)){
       console.log(gifName, 'exists')
       await delay(10000)
+
       return
     }
-    const gifArguments = `-src="${ folder }/${ subreddit }/images/*.jpg" -delay=${ DELAY } -dest="gifs/${ gifName }" -verbose`
+    const gifArguments = `-src="${ folder }/${ subreddit }/*.jpg" -delay=${ DELAY } -dest="gifs/${ gifName }" -verbose`
     const gifCommand = `goanigiffy ${ gifArguments }`
-    console.log(gifCommand, `gifCommand`)
+    console.log(gifCommand, 'gifCommand')
     await execSafe({
       command : gifCommand,
       cwd     : __dirname,

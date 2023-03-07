@@ -64,7 +64,7 @@ class SubredditDownloader:
         await self.download_elements(elements)
 
     async def download_elements(self, links: dict):
-        pattern = r'\.(jpe?g|gif?v|png|mp4)'
+        pattern = r'\.(jpe?g|png)'
         tasks = []
         for name, link in links.items():
             match = re.search(pattern, link)
@@ -72,13 +72,8 @@ class SubredditDownloader:
             try:
                 name += '.' + match.group(1)
             except AttributeError:
-                if 'v.redd.it' in link:
-                    # Sometimes links don't have a file extension.
-                    # See here: https://v.redd.it/gyh95hiqc0b11/DASH_9_6_M?source=fallback
-                    name += '.mp4'
-                else:
-                    print(f"Unrecognized link skipped. {link}")
-                    continue
+                print(f"Unrecognized link skipped. {link}")
+                continue
 
             tasks.append(asyncio.create_task(self.download(name=name, url=link)))
 
@@ -168,19 +163,7 @@ class SubredditDownloader:
         return elements
 
     async def get_real_gif_link(self, link):
-        # Imgur does a very strange thing where their .gifv are actually just .mp4,
-        # so we need the real link to the video.
-        async with self.session.get(link) as resp:
-            data = await resp.read()
-            # Convert bytes to str.
-            try:
-                data = data.decode('utf-8')
-                match = re.findall(r'content="(.+mp4)', data)
-            except UnicodeDecodeError:
-                print(f"Wrong encoding format for {link}. Skipped.")
-                return ''
-
-        return '' if not match else match[0]
+        return ''
 
     @retry_connection
     async def download(self, name, url) -> None:
@@ -195,47 +178,9 @@ class SubredditDownloader:
             content = await response.read()
 
             if url.startswith('https://v.redd.it'):
-                await self.download_reddit_video(name, url, video_data=content)
+                print(f"Skip downloading video {url}")
             else:
                 await self.write_to_disk(name=name, image=content)
-
-    async def download_reddit_video(self, name, url, video_data):
-        # Download video's audio.
-        audio_link = re.sub(r'DASH_(\d{3,4})', 'DASH_audio', url)
-        async with self.session.get(audio_link) as audio_response:
-            audio_data = await audio_response.read()
-
-        # Store them into files.
-        temp_video_file = f'{name}_temp.mp4'
-        temp_audio_file = f'{name}_audio_temp.mp4'
-        async with aiofiles.open(temp_video_file, 'wb') as file:
-            await file.write(video_data)
-
-        async with aiofiles.open(temp_audio_file, 'wb') as file:
-            await file.write(audio_data)
-
-        # Load them into ffmpeg and join them.
-        input_video = ffmpeg.input(temp_video_file)
-        input_audio = ffmpeg.input(temp_audio_file)
-
-        dir_path = await self.get_file_dst_folder(name)
-        dst_file = str(dir_path / name)
-
-        stream = ffmpeg.output(input_video,
-                               input_audio,
-                               filename=dst_file,
-                               vcodec='copy',
-                               acodec='copy',
-                               loglevel='quiet')
-        try:
-            stream.run(overwrite_output=True)
-        except ffmpeg.Error:
-            # Video probably has no audio.
-            await self.write_to_disk(name=name, image=video_data)
-
-        # Delete temporary files.
-        pathlib.Path(temp_video_file).unlink()
-        pathlib.Path(temp_audio_file).unlink()
 
     async def write_to_disk(self, name, image):
         """ Write the downloaded image/video/gif into the corresponding folder """
@@ -279,75 +224,6 @@ class SubredditDownloader:
             images_dict[id_ + f'_{img_num}'] = url
 
         return images_dict
-
-    @retry_connection
-    async def parse_video(self, submission):
-        try:
-            video = submission.crosspost_parent_list[0]['media']['reddit_video']
-            if video['transcoding_status'] != 'completed':
-                # Video didn't transcode correctly or was deleted?
-                return
-
-            return video['fallback_url']
-        except TypeError:
-            # Image was deleted.
-            return
-        except AttributeError:
-            return await self.download_video_with_json(submission)
-
-        except Exception:
-            raise
-
-    async def download_video_with_json(self, submission) -> str:
-        # The submission has not been crossposted, so to get the video information
-        # we need to open the v.redd.it link, replace the end with a .json and get the video link from there.
-        headers = {
-            'authority': 'www.reddit.com',
-            'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"',
-            'dnt': '1',
-            'upgrade-insecure-requests': '1',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36',
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'sec-fetch-site': 'none',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-user': '?1',
-            'sec-fetch-dest': 'document',
-            'accept-language': 'en,es-ES;q=0.9,es;q=0.8',
-        }
-
-        link = f'https://www.reddit.com{submission.permalink}.json'
-        async with self.session.get(link, headers=headers) as response:
-            if response.status == 429:
-                print("Too many requests. Sleeping 5 minutes and trying again...")
-                for _ in trange(5 * 60):
-                    time.sleep(1)
-                return await self.download_video_with_json(submission)
-
-            try:
-                response = await response.json()
-            except json.decoder.JSONDecodeError as error:
-                print("Error downloading video...")
-                print(f"{type(error).__name__}: {error}")
-                return ''
-
-            try:
-                media = response[0]['data']['children'][0]['data']['secure_media']
-                if not media:
-                    # Video was probably removed before the video was transcoded.
-                    return ''
-
-                video = media['reddit_video']
-                if video['transcoding_status'] != 'completed':
-                    # Video didn't transcode correctly?
-                    return ''
-
-                return video['fallback_url']
-            except TypeError as error:
-                print("Error downloading video...")
-                print(f"{type(error).__name__}: {error}")
-
 
 async def main():
     t0 = time.perf_counter()

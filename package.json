@@ -6,7 +6,7 @@
   "author": "Deyan Totev <deyan.totev.extern@seven.one>",
   "license": "MIT",
   "scripts": {
-    "scrape": "cd scraper && python main.py",
+    "scrape": "cd scraper && python main.py art",
     "on:xx": "WITH_COVER_FLAG=ON DELAY=30 node gif-maker.js",
     "on:x": "WITH_CONTAIN_FLAG=ON DELAY=30 node gif-maker.js",
     "on": "WITH_COVER_FLAG=ON WITH_CONTAIN_FLAG=ON DELAY=30 node gif-maker.js",
